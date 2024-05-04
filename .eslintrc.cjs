@@ -42,6 +42,7 @@ module.exports = {
     ],
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
     'no-underscore-dangle': ['error', { allowAfterThis: true }],
+    'consistent-return': 'off',
   },
   settings: {
     react: { version: '18.2' },
