@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export default class MovieService {
+class MovieService {
   constructor() {
     this._apiUrl = 'https://api.themoviedb.org/3'
     this._posterUrl = 'https://image.tmdb.org/t/p/w500'
@@ -29,21 +29,19 @@ export default class MovieService {
         query,
         page,
       })
-
-      // if (includeGenres) {
-      //   const genres = await this.getMovieGenres()
-      //   return this.convertMoviesData({ results: data.results, genres })
-      // }
-
       return this.convertMoviesData(data)
     } catch (e) {
-      throw new Error(`[${e.response?.status || 'XXX'}] Failed to fetch movies. Try again later.`)
+      throw new Error(`[${e.response?.status || 'o_o'}] Failed to fetch movies. Try again later.`)
     }
   }
 
   async getMovieGenres() {
-    const data = await this.fetchData('/genre/movie/list')
-    return data.genres
+    try {
+      const data = await this.fetchData('/genre/movie/list')
+      return data.genres
+    } catch (e) {
+      throw new Error(`[${e.response?.status || 'o_o'}] Failed to fetch genres. Try again later.`)
+    }
   }
 
   convertMoviesData({ results, ...data }) {
@@ -60,9 +58,10 @@ export default class MovieService {
           id: movie.id,
           title: movie.title,
           releaseDate: movie.release_date,
+          genres: movie.genre_ids,
           description: movie.overview,
-          // genres: movieGenres,
           posterImageUrl: posterUrl,
+          rating: movie.vote_average,
         }
       }),
       page: data.page,
@@ -70,3 +69,5 @@ export default class MovieService {
     }
   }
 }
+
+export default new MovieService()

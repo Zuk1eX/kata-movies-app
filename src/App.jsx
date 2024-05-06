@@ -3,13 +3,13 @@ import { debounce } from 'lodash'
 import { Alert, Spin } from 'antd'
 import './App.css'
 import CardsList from './components/CardsList/CardsList'
-import MovieService from './api/MovieService'
+import api from './api/MovieService'
 import Search from './components/Search/Search'
 import Pagination from './components/Pagination/Pagination'
-
-const api = new MovieService()
+import MovieServiceContext from './context/MovieServiceContext'
 
 function App() {
+  const [genres, setGenres] = useState([])
   const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(null)
   const [query, setQuery] = useState('')
@@ -18,6 +18,12 @@ function App() {
 
   const [isCardsLoading, setIsCardsLoading] = useState(false)
   const [cardsError, setCardsError] = useState(null)
+
+  function handleSearch(value) {
+    setQuery(value)
+    setSearchQuery(value.trim())
+    setPage(1)
+  }
 
   const debouncedFetchCards = useMemo(
     () =>
@@ -50,25 +56,29 @@ function App() {
   }, [searchQuery, debouncedFetchCards])
 
   useEffect(fetchSearchResults, [fetchSearchResults])
+  useEffect(() => {
+    async function fetchGenres() {
+      const data = await api.getMovieGenres()
+      setGenres(data)
+    }
 
-  function handleSearch(value) {
-    setQuery(value)
-    setSearchQuery(value.trim())
-    setPage(1)
-  }
+    fetchGenres()
+  }, [])
 
   return (
     <div className="container">
-      <Search query={query} onSearch={(v) => handleSearch(v)} />
-      {!searchQuery && !isCardsLoading && <Alert message="Type to search..." type="info" showIcon />}
-      {isCardsLoading && <Spin size="large" />}
-      {/* {console.log(cards)} */}
-      {searchQuery && !isCardsLoading ? (
-        <>
-          <CardsList cards={cards} totalCards={totalCards} error={cardsError} />
-          <Pagination page={page} totalResults={totalCards} onPageChange={setPage} />
-        </>
-      ) : null}
+      <MovieServiceContext.Provider value={genres}>
+        <Search query={query} onSearch={(v) => handleSearch(v)} />
+        {!searchQuery && !isCardsLoading && <Alert message="Type to search..." type="info" showIcon />}
+        {isCardsLoading && <Spin size="large" />}
+        {/* {console.log(cards)} */}
+        {searchQuery && !isCardsLoading ? (
+          <>
+            <CardsList cards={cards} totalCards={totalCards} error={cardsError} />
+            <Pagination page={page} totalResults={totalCards} onPageChange={setPage} />
+          </>
+        ) : null}
+      </MovieServiceContext.Provider>
     </div>
   )
 }
