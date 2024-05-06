@@ -8,6 +8,7 @@ class MovieService {
       'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMzJhMTYzODE3N2EzNmNmNTZmYzQ2ODE3MjUzOGRkNyIsInN1YiI6IjY2MzQ3ZjM5OTU5MGUzMDEyY2JiNWM2YiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.tXis_4Z6bnrjmRk6BlIt6QMZwCrXKOZwVVjmsC_waOE'
     this._headers = {
       accept: 'application/json',
+      'Content-Type': 'application/json;charset=utf-8',
       Authorization: `Bearer ${this._apiToken}`,
     }
     this._api = axios.create({
@@ -16,8 +17,18 @@ class MovieService {
     })
   }
 
-  async fetchData(url, params) {
-    const response = await this._api.get(url, { params })
+  async fetchData(url, options) {
+    const response = await this._api.get(url, options)
+    return response.data
+  }
+
+  async postData(url, data, options) {
+    const response = await this._api.post(url, data, options)
+    return response.data
+  }
+
+  async deleteData(url, options) {
+    const response = await this._api.delete(url, options)
     return response.data
   }
 
@@ -26,12 +37,14 @@ class MovieService {
 
     try {
       const data = await this.fetchData('/search/movie', {
-        query,
-        page,
+        params: {
+          query,
+          page,
+        },
       })
       return this.convertMoviesData(data)
     } catch (e) {
-      throw new Error(`[${e.response?.status || 'o_o'}] Failed to fetch movies. Try again later.`)
+      throw new Error(`[${e.response?.status || 'o_0'}] Failed to fetch movies. Try again later.`)
     }
   }
 
@@ -40,7 +53,7 @@ class MovieService {
       const data = await this.fetchData('/genre/movie/list')
       return data.genres
     } catch (e) {
-      throw new Error(`[${e.response?.status || 'o_o'}] Failed to fetch genres. Try again later.`)
+      throw new Error(`[${e.response?.status || 'o_0'}] Failed to fetch genres. Try again later.`)
     }
   }
 
@@ -48,11 +61,6 @@ class MovieService {
     return {
       results: results.map((movie) => {
         const posterUrl = movie.poster_path && this._posterUrl + movie.poster_path
-        // const movieGenres =
-        //   genres &&
-        //   movie.genre_ids.map((id) => {
-        //     return genres.find((genre) => genre.id === id)
-        //   })
 
         return {
           id: movie.id,
@@ -62,12 +70,63 @@ class MovieService {
           description: movie.overview,
           posterImageUrl: posterUrl,
           rating: movie.vote_average,
+          rate: movie.rating,
         }
       }),
       page: data.page,
       totalResults: data.total_results,
     }
   }
+
+  async createGuestSession() {
+    try {
+      const data = await this.fetchData('/authentication/guest_session/new')
+      return data.guest_session_id
+    } catch (e) {
+      throw new Error(`[${e.response?.status || 'o_0'}] Failed to create guest session. Try again later.`)
+    }
+  }
+
+  async getRatedMovies(sessionId) {
+    try {
+      const data = await this.fetchData(`/guest_session/${sessionId}/rated/movies`)
+      return this.convertMoviesData(data)
+    } catch (e) {
+      throw new Error(`[${e.response?.status || 'o_0'}] Failed to fetch rated movies. Try again later.`)
+    }
+  }
+
+  async rateMovie(movieId, value, sessionId) {
+    try {
+      const result = await this.postData(
+        `/movie/${movieId}/rating`,
+        {
+          value,
+        },
+        {
+          params: {
+            guest_session_id: sessionId,
+          },
+        }
+      )
+      return result
+    } catch (e) {
+      throw new Error(`[${e.response?.status || 'o_0'}] Failed to rate movie. Try again later.`)
+    }
+  }
+
+  async unrateMovie(movieId, sessionId) {
+    try {
+      const result = await this.deleteData(`/movie/${movieId}/rating`, {
+        params: {
+          guest_session_id: sessionId,
+        },
+      })
+      return result
+    } catch (e) {
+      throw new Error(`[${e.response?.status || 'o_0'}] Failed to unrate movie. Try again later.`)
+    }
+  }
 }
 
-export default new MovieService()
+export default MovieService

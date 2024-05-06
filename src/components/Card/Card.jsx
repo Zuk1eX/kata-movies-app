@@ -1,5 +1,5 @@
-import { useContext } from 'react'
-import { Card, Flex, Progress, Tag, Typography } from 'antd'
+import { useContext, useState } from 'react'
+import { Card, Flex, Progress, Rate, Tag, Typography } from 'antd'
 import defaultPoster from '../../assets/defaultPoster.jpg'
 import './Card.css'
 import { formatDate, sliceText } from '../../services/utils'
@@ -8,8 +8,11 @@ import MovieServiceContext from '../../context/MovieServiceContext'
 const { Title, Text, Paragraph } = Typography
 
 export default function MovieCard({ card }) {
-  const genresList = useContext(MovieServiceContext)
+  const { api, genres: genresList, sessionId } = useContext(MovieServiceContext)
   const genres = card.genres && genresList.filter((genre) => card.genres.includes(genre.id))
+  const [rate, setRate] = useState(card.rate)
+
+  const cardRatingAvg = card.rating.toFixed(1)
 
   let ratingColor
   if (card.rating >= 7) {
@@ -20,6 +23,15 @@ export default function MovieCard({ card }) {
     ratingColor = '#E97E00'
   } else {
     ratingColor = '#E90000'
+  }
+
+  function handleChangeRate(value) {
+    if (value) {
+      api.rateMovie(card.id, value, sessionId)
+    } else {
+      api.unrateMovie(card.id)
+    }
+    setRate(value)
   }
 
   return (
@@ -47,7 +59,7 @@ export default function MovieCard({ card }) {
             <Progress
               type="circle"
               percent={card.rating * 10}
-              format={() => card.rating.toFixed(1)}
+              format={() => cardRatingAvg}
               size={40}
               className="card__rating"
               strokeColor={ratingColor}
@@ -59,6 +71,13 @@ export default function MovieCard({ card }) {
               {genres && genres.map((genre) => <Tag key={genre.id}>{genre.name}</Tag>)}
             </Flex>
             <Paragraph className="card__description">{sliceText(card.description)}</Paragraph>
+            <Rate
+              allowHalf
+              count={10}
+              value={rate}
+              className="card__rate"
+              onChange={(value) => handleChangeRate(value)}
+            />
           </Flex>
         </div>
       </Flex>
