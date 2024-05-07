@@ -1,12 +1,14 @@
 import { useContext, useEffect, useState } from 'react'
 import { Spin } from 'antd'
 import MovieServiceContext from '../../context/MovieServiceContext'
+// import RatedMoviesContext from '../../context/RatedMoviesContext'
 import './RatedTab.css'
 import CardsList from '../CardsList/CardsList'
 import Pagination from '../Pagination/Pagination'
 
 export default function RatedTab() {
   const { api, sessionId } = useContext(MovieServiceContext)
+
   const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(null)
   const [page, setPage] = useState(1)

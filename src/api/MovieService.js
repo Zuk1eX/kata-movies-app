@@ -81,7 +81,10 @@ class MovieService {
   async createGuestSession() {
     try {
       const data = await this.fetchData('/authentication/guest_session/new')
-      return data.guest_session_id
+      return {
+        sessionId: data.guest_session_id,
+        expiresAt: data.expires_at,
+      }
     } catch (e) {
       throw new Error(`[${e.response?.status || 'o_0'}] Failed to create guest session. Try again later.`)
     }

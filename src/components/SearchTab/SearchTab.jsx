@@ -9,6 +9,7 @@ import Pagination from '../Pagination/Pagination'
 
 export default function SearchTab() {
   const { api } = useContext(MovieServiceContext)
+
   const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(null)
   const [query, setQuery] = useState('')
@@ -41,7 +42,7 @@ export default function SearchTab() {
     [api, searchQuery, page]
   )
 
-  const fetchSearchResults = useCallback(() => {
+  const debouncedFetchSearchResults = useCallback(() => {
     if (!searchQuery) {
       return
     }
@@ -54,7 +55,7 @@ export default function SearchTab() {
     }
   }, [searchQuery, debouncedFetchCards])
 
-  useEffect(fetchSearchResults, [fetchSearchResults])
+  useEffect(debouncedFetchSearchResults, [debouncedFetchSearchResults])
 
   return (
     <div className="search-tab">

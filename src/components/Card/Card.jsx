@@ -1,18 +1,22 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Card, Flex, Progress, Rate, Tag, Typography } from 'antd'
 import defaultPoster from '../../assets/defaultPoster.jpg'
 import './Card.css'
 import { formatDate, sliceText } from '../../services/utils'
 import MovieServiceContext from '../../context/MovieServiceContext'
+import RatedMoviesContext from '../../context/RatedMoviesContext'
 
 const { Title, Text, Paragraph } = Typography
 
 export default function MovieCard({ card }) {
   const { api, genres: genresList, sessionId } = useContext(MovieServiceContext)
-  const genres = card.genres && genresList.filter((genre) => card.genres.includes(genre.id))
-  const [rate, setRate] = useState(card.rate)
+  const { ratedCards, setRatedCards } = useContext(RatedMoviesContext)
 
+  const genres = card.genres && genresList.filter((genre) => card.genres.includes(genre.id))
   const cardRatingAvg = card.rating.toFixed(1)
+  const cardRate = ratedCards.find((item) => item.id === card.id)?.rate
+
+  const [rate, setRate] = useState(card.rate || cardRate || 0)
 
   let ratingColor
   if (card.rating >= 7) {
@@ -25,14 +29,36 @@ export default function MovieCard({ card }) {
     ratingColor = '#E90000'
   }
 
-  function handleChangeRate(value) {
-    if (value) {
-      api.rateMovie(card.id, value, sessionId)
-    } else {
-      api.unrateMovie(card.id, sessionId)
-    }
-    setRate(value)
+  function isInRatedCards(id) {
+    return ratedCards.findIndex((item) => item.id === id) !== -1
   }
+
+  function updateRatedCards(id, rateValue) {
+    if (rateValue) {
+      if (isInRatedCards(id)) {
+        setRatedCards(ratedCards.map((item) => (item.id === id ? { ...item, rate: rateValue } : item)))
+      } else {
+        setRatedCards([...ratedCards, { id, rate: rateValue }])
+      }
+    } else {
+      setRatedCards(ratedCards.filter((item) => item.id !== id))
+    }
+  }
+
+  async function handleChangeRate(value) {
+    if (value) {
+      await api.rateMovie(card.id, value, sessionId)
+    } else {
+      await api.unrateMovie(card.id, sessionId)
+    }
+
+    setRate(value)
+    updateRatedCards(card.id, value)
+  }
+
+  useEffect(() => {
+    setRate(cardRate)
+  }, [cardRate])
 
   return (
     <Card
