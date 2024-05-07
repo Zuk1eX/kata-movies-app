@@ -4,7 +4,7 @@ import './CardsList.css'
 
 export default function CardsList({ cards, totalCards, error }) {
   if (error) {
-    return <Alert message={error} type="error" showIcon />
+    return <Alert message={error} type="error" showIcon className="alert" />
   }
 
   return !totalCards ? (

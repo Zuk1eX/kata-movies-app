@@ -4,6 +4,11 @@
   gap: 30px;
 }
 
+.alert {
+  text-align: center;
+  white-space: break-spaces;
+}
+
 @media screen and (max-width: 1140px) {
   .cards {
     flex-direction: column;

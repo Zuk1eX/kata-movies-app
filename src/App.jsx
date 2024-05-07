@@ -55,7 +55,7 @@ function App() {
   return (
     <div className="container">
       <MovieServiceContext.Provider value={context}>
-        <Tabs defaultActiveKey="1" items={tabs} className="tabs" tabBarStyle={{ marginInline: 'auto' }} />
+        <Tabs defaultActiveKey="1" items={tabs} className="tabs" centered tabBarStyle={{ marginInline: 'auto' }} />
       </MovieServiceContext.Provider>
     </div>
   )

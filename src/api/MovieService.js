@@ -87,12 +87,18 @@ class MovieService {
     }
   }
 
-  async getRatedMovies(sessionId) {
+  async getRatedMovies(sessionId, page = 1) {
     try {
-      const data = await this.fetchData(`/guest_session/${sessionId}/rated/movies`)
+      const data = await this.fetchData(`/guest_session/${sessionId}/rated/movies`, {
+        params: {
+          page,
+        },
+      })
       return this.convertMoviesData(data)
     } catch (e) {
-      throw new Error(`[${e.response?.status || 'o_0'}] Failed to fetch rated movies. Try again later.`)
+      throw new Error(
+        `[${e.response?.status || 'o_0'}] Failed to fetch rated movies. Try again later.\nHow about rating some movies first?`
+      )
     }
   }
 

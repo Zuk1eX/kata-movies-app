@@ -29,7 +29,7 @@ export default function MovieCard({ card }) {
     if (value) {
       api.rateMovie(card.id, value, sessionId)
     } else {
-      api.unrateMovie(card.id)
+      api.unrateMovie(card.id, sessionId)
     }
     setRate(value)
   }
